@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Memory Allocation Simulator - Best Fit vs Worst Fit</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>Memory Allocation Simulator</h1>
+    <p>Best Fit vs Worst Fit &middot; Operating System &middot; Stage 3</p>
+  </header>
+
+  <nav class="tabs" aria-label="Simulator mode">
+    <button id="tab-classic" class="tab active" type="button" aria-controls="classic-view" aria-selected="true">Classic Mode (Best / Worst Fit)</button>
+    <button id="tab-research" class="tab" type="button" aria-controls="research-view" aria-selected="false">Research Mode (Dynamic Heap)</button>
+  </nav>
+
+  <main class="container" id="classic-view">
+
+    <!-- 1. ENTER INPUT -->
+    <section class="card" aria-labelledby="input-title">
+      <h2 id="input-title">1. Enter Input</h2>
+      <div class="field">
+        <label for="blocks">Memory Blocks (KB, comma-separated)</label>
+        <input id="blocks" type="text" value="100, 500, 200, 300, 600" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label for="processes">Process Sizes (KB, comma-separated)</label>
+        <input id="processes" type="text" value="212, 417, 112, 426" autocomplete="off" />
+      </div>
+      <p id="error" class="error" role="alert" hidden></p>
+
+      <!-- 2 + 3. SELECT ALGORITHM & EXECUTE -->
+      <h2 class="sub">2. Select Algorithm &amp; Run</h2>
+      <div class="buttons">
+        <button id="btn-best" class="btn best">Best Fit</button>
+        <button id="btn-worst" class="btn worst">Worst Fit</button>
+        <button id="btn-compare" class="btn compare">Compare Both</button>
+        <button id="btn-reset" class="btn reset">Reset</button>
+        <button id="btn-exit" class="btn exit">Exit</button>
+      </div>
+    </section>
+
+    <!-- 4. VIEW RESULTS -->
+    <section class="card" aria-labelledby="results-title">
+      <h2 id="results-title">3. Results</h2>
+      <div id="summary" class="summary"><p class="placeholder">Run an algorithm to see performance parameters.</p></div>
+
+      <div class="table-wrap">
+        <table id="results-table">
+          <thead>
+            <tr><th>Algorithm</th><th>Process</th><th>Size (KB)</th><th>Block</th>
+                <th>Block Size</th><th>Remaining</th><th>Status</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Visual memory map -->
+    <section class="card" id="map-card" hidden>
+      <h2>Memory Map</h2>
+      <p class="hint">Each bar is one memory block. Coloured parts are allocated processes; grey is free space left.</p>
+      <div id="memory-map"></div>
+    </section>
+
+    <!-- 5. COMPARE -->
+    <section class="card" id="compare-card" hidden>
+      <h2>4. Performance Comparison</h2>
+      <div class="table-wrap">
+        <table id="compare-table">
+          <thead><tr><th>Parameter</th><th>Best Fit</th><th>Worst Fit</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p id="verdict" class="verdict"></p>
+    </section>
+  </main>
+
+  <!-- ================= RESEARCH MODE (Stage 3) ================= -->
+  <main class="container" id="research-view" hidden>
+
+    <section class="card" aria-labelledby="r-title">
+      <h2 id="r-title">Research Mode &ndash; Dynamic Heap Evaluation</h2>
+      <p class="hint">Approach from Al Abdi, Alqudah &amp; Helmy (Contiki-NG heap study): the allocation strategy is a replaceable part of a heap that handles
+        <strong>allocation and release</strong>. First Fit, Best Fit and Worst Fit replay the <em>same</em> random workload; results are averaged over several runs.</p>
+
+      <div class="r-grid">
+        <div class="field">
+          <label for="r-scenario">Workload scenario</label>
+          <select id="r-scenario">
+            <option value="A">A: Mixed sensor node</option>
+            <option value="B">B: Small-packet heavy</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="r-heap">Heap size (bytes)</label>
+          <input id="r-heap" type="text" inputmode="numeric" value="16384" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="r-events">Events (alloc / free)</label>
+          <input id="r-events" type="text" inputmode="numeric" value="10000" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="r-seeds">Runs (random seeds)</label>
+          <input id="r-seeds" type="text" inputmode="numeric" value="30" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="r-fill">Target fill (%)</label>
+          <input id="r-fill" type="text" inputmode="numeric" value="75" autocomplete="off" />
+        </div>
+      </div>
+      <p id="r-error" class="error" role="alert" hidden></p>
+
+      <div class="buttons">
+        <button id="r-run" class="btn compare" type="button">Run Experiment</button>
+        <button id="r-defaults" class="btn reset" type="button">Reset to Defaults</button>
+      </div>
+      <p id="r-progress" class="hint" aria-live="polite"></p>
+    </section>
+
+    <section class="card" id="r-results-card" hidden>
+      <h2>Results (mean &plusmn; standard deviation)</h2>
+      <div class="table-wrap">
+        <table id="r-table">
+          <thead>
+            <tr><th>Algorithm</th><th>Utilization %</th><th>Internal frag. %</th>
+                <th>External frag. %</th><th>Failure rate %</th><th>Search steps / request</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="hint">Best value in each column is highlighted. Search steps = free blocks examined per request (hardware-independent proxy for allocation time).</p>
+      <div id="r-charts" class="charts"></div>
+      <p id="r-verdict" class="verdict"></p>
+    </section>
+
+    <section class="card">
+      <h2>Parameter Definitions</h2>
+      <ul class="defs">
+        <li><strong>Utilization</strong> &ndash; requested bytes in use &divide; heap size, averaged over all events.</li>
+        <li><strong>Internal fragmentation</strong> &ndash; (allocated &minus; requested bytes) &divide; heap size (alignment and unsplit leftovers).</li>
+        <li><strong>External fragmentation</strong> &ndash; 1 &minus; (largest free block &divide; total free memory); high = free space is scattered.</li>
+        <li><strong>Failure rate</strong> &ndash; failed requests &divide; all requests.</li>
+        <li><strong>Search steps</strong> &ndash; free blocks examined per request.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="app-footer">Parth Bidve (03) &amp; Shubham Mutha (30) &middot; Shah &amp; Anchor Kutchhi Engineering College &middot; 2026-27</footer>
+
+  <script src="js/validators.js"></script>
+  <script src="js/allocator.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/research.js"></script>
+  <script src="js/research_ui.js"></script>
+</body>
+</html>
